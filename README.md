@@ -21,7 +21,7 @@ Supported build environment is **Ubuntu Bionic 18.04 x64** ([minimal iso image](
 **Execution**
 
 	apt-get -y install git
-	git clone https://github.com/OLIMEX/build
+	git clone https://github.com/d3v1c3nv11/build
 	cd build
 	./compile.sh
 
