@@ -23,7 +23,7 @@ Supported build environment is **Ubuntu Bionic 18.04 x64** ([minimal iso image](
 	apt-get -y install git
 	git clone https://github.com/d3v1c3nv11/build
 	cd build
-	./compile.sh
+	./compile.sh RTL8812AU=no WIREGUARD=no
 
 Make sure that full path to the build script does not contain spaces.
 
