@@ -167,6 +167,9 @@ create_rootfs_cache()
 
 		# stage: create apt sources list
 		create_sources_list "$RELEASE" "$SDCARD/"
+		
+		# add uneverse to install jk.deb
+		echo "deb http://ports.ubuntu.com/ubuntu-ports/ bionic universe" > $SDCARD/etc/apt/sources.list.d/hassio-universe.list
 
 		# stage: add armbian repository and install key
 		echo "deb http://apt.armbian.com $RELEASE main ${RELEASE}-utils ${RELEASE}-desktop" > $SDCARD/etc/apt/sources.list.d/armbian.list
@@ -212,6 +215,12 @@ create_rootfs_cache()
 			${PROGRESS_LOG_TO_FILE:+' | tee -a $DEST/debug/debootstrap.log'} \
 			${OUTPUT_DIALOG:+' | dialog --backtitle "$backtitle" --progressbox "Installing Armbian system..." $TTY_Y $TTY_X'} \
 			${OUTPUT_VERYSILENT:+' >/dev/null 2>/dev/null'}
+			
+		# install hassio 
+		echo -e "\nInstall docker..."
+		eval 'curl -sSL https://get.docker.com | sh'
+		echo -e "\nInstall HASSIO:"
+		eval 'curl -sL "https://raw.githubusercontent.com/home-assistant/hassio-build/master/install/hassio_install" | bash -s -- -m qemuarm'	
 
 		[[ ${PIPESTATUS[0]} -ne 0 ]] && exit_with_error "Installation of Armbian packages failed"
 
