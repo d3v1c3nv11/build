@@ -1,4 +1,4 @@
-# Armbian for OLIMEX A20 boards #
+# Armbian for OLIMEX A20 boards with hass.io included #
 
 **This info had been modified for the Olimex branch of the build**
 
