@@ -287,11 +287,6 @@ install_common()
 	#install docker
 	echo -e "\nInstall docker..."
 	chroot $SDCARD /bin/bash -c "curl -sSL https://get.docker.com | sh"
-
-	#copy hassio install script
-	cp $SRC/packages/blobs/hassio/hassio-install.sh $SDCARD/etc/init.d/hassio-install.sh
-	chmod 755 $SDCARD/etc/init.d/hassio-install.sh
-	
 }
 
 install_distribution_specific()
