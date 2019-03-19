@@ -55,7 +55,7 @@ HASSIO_VERSION=$(curl -s $URL_VERSION | jq -e -r '.supervisor')
 cat <<-EOF > $destination/etc/hassio.json 
 {
     "supervisor": "homeassistant/armhf-hassio-supervisor",
-    "homeassistant": "homeassistant/qemuarm-homeassistant}",
+    "homeassistant": "homeassistant/qemuarm-homeassistant",
     "data": "/usr/share/hassio"
 }
 EOF
