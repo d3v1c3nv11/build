@@ -1,4 +1,4 @@
-# Armbian for OLIMEX A20 boards with sets of servers ready to install #
+# Armbian for OLIMEX A20 boards with set of servers ready to install #
 
 # Home Assistant # 
 # NextCloud # 
