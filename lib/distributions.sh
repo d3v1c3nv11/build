@@ -284,9 +284,6 @@ install_common()
         # nsswitch settings for sane DNS behavior: remove resolve, assure libnss-myhostname support
 	sed "s/hosts\:.*/hosts:          files mymachines dns myhostname/g" -i $SDCARD/etc/nsswitch.conf
 	
-	#install docker
-	echo -e "\nInstall docker..."
-	chroot $SDCARD /bin/bash -c "curl -sSL https://get.docker.com | sh"
 }
 
 install_distribution_specific()

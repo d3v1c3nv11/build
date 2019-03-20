@@ -143,7 +143,7 @@ PACKAGE_LIST_ADDITIONAL="armbian-firmware alsa-utils btrfs-tools dosfstools ioto
 	libproc-processtable-perl aptitude dnsutils f3 haveged hdparm rfkill vlan sysstat bash-completion \
 	hostapd git ethtool network-manager unzip ifenslave command-not-found libpam-systemd iperf3 \
 	software-properties-common libnss-myhostname f2fs-tools avahi-autoipd iputils-arping qrencode \
-	apparmor-utils avahi-daemon apt-transport-https dbus jq socat"
+	apparmor-utils avahi-daemon apt-transport-https dbus snap snapd squashfs-tools jq socat"
 
 
 # Dependent desktop packages
