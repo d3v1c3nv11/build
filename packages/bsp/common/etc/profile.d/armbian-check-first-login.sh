@@ -8,106 +8,80 @@
 
 . /etc/armbian-release
 
-install_hassio()
+install_servers()
 {
 
-set -e
+	echo ""
+		PS3='Please enter your choice to install: '
+		options=("Home Assistant" "NextCloud" "Webmin with Apache, MySQL & PHP servers" "Do not show this menu again" "Quit")
+		select opt in "${options[@]}"
+		do
+		    case $opt in
+		        "Home Assistant")
+		            if [ ! -f /etc/hassio.json ]; then
+					echo "Installing Home Assistant..."
+					curl -sSL https://get.docker.com | sh
+					curl -sL https://raw.githubusercontent.com/home-assistant/hassio-build/master/install/hassio_install | bash -s -- -m qemuarm
+					else
+					echo "$opt already installed."
+					exit 1
+					fi
+		            break
+		            ;;
+		        "NextCloud")
+		            if [ ! -f /var/local/nextcloud ]; then
+		            echo "Installing $opt..."
+		            snap install nextcloud
+		            touch "/var/local/nextcloud"
+		            else
+					echo "$opt already installed."
+					exit 1
+		            fi
+		            break
+		            ;;
+		        "Webmin with Apache, MySQL & PHP servers")
+		            if [ -f /var/local/nextcloud ]; then
+		            echo "Found Nextcloud instaled. Exiting"
+		            exit 1
+		            fi
+					if [ ! -f /var/local/webserver ]; then
+		            echo "Installing $opt..."
+		            apt install -y apache2 
+		            apt install -y mysql-server
+		            apt install -y php libapache2-mod-php
+		            apt install -y apt-show-versions libapt-pkg-perl libauthen-pam-perl libio-pty-perl \
+									libnet-ssleay-perl libpython-stdlib libpython2.7-minimal libpython2.7-stdlib \
+									perl-openssl-defaults python python-minimal python2.7 python2.7-minimal
+		            cat <<-EOF > /var/www/html/info.php 
+		            <?php
+					phpinfo();
+					?>
+					EOF
+					systemctl restart apache2
+					wget https://sourceforge.net/projects/webadmin/files/webmin/1.900/webmin_1.900_all.deb
+					dpkg -i ./webmin_1.900_all.deb
+					apt -fy install
+					rm webmin_1.900_all.deb
+		            touch "/var/local/webserver"
+		            else
+					echo "$opt already installed."
+					fi
+		            break
+		            ;;
+		        "Do not show this menu again")
+		             touch "/var/local/installed"
+		             exit 1
+		             break
+		             ;;   
+		        "Quit")
+		            break
+		            ;;
+		        *) echo "invalid option $REPLY";;
+		    esac
+		done
 
-ARCH=armv7l
-DOCKER_REPO=homeassistant
-DATA_SHARE=/usr/share/hassio
-URL_VERSION="https://s3.amazonaws.com/hassio-version/stable.json"
-URL_BIN_HASSIO="https://raw.githubusercontent.com/home-assistant/hassio-build/master/install/files/hassio-supervisor"
-URL_BIN_APPARMOR="https://raw.githubusercontent.com/home-assistant/hassio-build/master/install/files/hassio-apparmor"
-URL_SERVICE_HASSIO="https://raw.githubusercontent.com/home-assistant/hassio-build/master/install/files/hassio-supervisor.service"
-URL_SERVICE_APPARMOR="https://raw.githubusercontent.com/home-assistant/hassio-build/master/install/files/hassio-apparmor.service"
-URL_APPARMOR_PROFILE="http://s3.amazonaws.com/hassio-version/apparmor.txt"
-
-# Check env
-command -v systemctl > /dev/null 2>&1 || { echo "[Error] Only systemd is supported!"; exit 1; }
-command -v docker > /dev/null 2>&1 || { echo "[Error] Please install docker first"; exit 1; }
-command -v jq > /dev/null 2>&1 || { echo "[Error] Please install jq first"; exit 1; }
-command -v curl > /dev/null 2>&1 || { echo "[Error] Please install curl first"; exit 1; }
-command -v avahi-daemon > /dev/null 2>&1 || { echo "[Error] Please install avahi first"; exit 1; }
-command -v dbus-daemon > /dev/null 2>&1 || { echo "[Error] Please install dbus first"; exit 1; }
-command -v apparmor_parser > /dev/null 2>&1 || echo "[Warning] No AppArmor support on host."
-command -v nmcli > /dev/null 2>&1 || echo "[Warning] No NetworkManager support on host."
-
-function version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
-
-
-# Generate hardware options
-        HOMEASSISTANT_DOCKER="homeassistant/qemuarm-homeassistant"
-        HASSIO_DOCKER="homeassistant/armhf-hassio-supervisor"
-
-### Main
-
-# Init folders
-if [ ! -d "$DATA_SHARE" ]; then
-    mkdir -p "$DATA_SHARE"
-fi
-
-# Read infos from web
-HASSIO_VERSION=$(curl -s $URL_VERSION | jq -e -r '.supervisor')
-
-##
-# Write config
-cat <<-EOF > $destination/etc/hassio.json 
-{
-    "supervisor": "homeassistant/armhf-hassio-supervisor",
-    "homeassistant": "homeassistant/qemuarm-homeassistant",
-    "data": "/usr/share/hassio"
 }
-EOF
-##
-# Check DNS settings
-DOCKER_VERSION="$(docker --version | grep -Po "\d{2}\.\d{2}\.\d")"
-if version_gt "18.09.0" "${DOCKER_VERSION}" && [ ! -e "/etc/docker/daemon.json" ]; then
-    echo "[Warning] Create DNS settings for Docker to avoid systemd bug!"
-    mkdir -p /etc/docker
-    echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' > /etc/docker/daemon.json
 
-    echo "[Info] Restart Docker and wait 30 seconds"
-    systemctl restart docker.service && sleep 30
-fi
-
-##
-# Pull supervisor image
-echo "[Info] Install supervisor Docker container"
-docker pull "$HASSIO_DOCKER:$HASSIO_VERSION" > /dev/null
-docker tag "$HASSIO_DOCKER:$HASSIO_VERSION" "$HASSIO_DOCKER:latest" > /dev/null
-
-##
-# Install Hass.io Supervisor
-echo "[Info] Install supervisor startup scripts"
-curl -sL ${URL_BIN_HASSIO} > /usr/sbin/hassio-supervisor
-curl -sL ${URL_SERVICE_HASSIO} > /etc/systemd/system/hassio-supervisor.service
-
-chmod a+x /usr/sbin/hassio-supervisor
-systemctl enable hassio-supervisor.service
-
-#
-# Install Hass.io AppArmor
-if command -v apparmor_parser > /dev/null 2>&1; then
-    echo "[Info] Install AppArmor scripts"
-    mkdir -p ${DATA_SHARE}/apparmor
-    curl -sL ${URL_BIN_APPARMOR} > /usr/sbin/hassio-apparmor
-    curl -sL ${URL_SERVICE_APPARMOR} > /etc/systemd/system/hassio-apparmor.service
-    curl -sL ${URL_APPARMOR_PROFILE} > ${DATA_SHARE}/apparmor/hassio-supervisor
-
-    chmod a+x /usr/sbin/hassio-apparmor
-    systemctl enable hassio-apparmor.service
-
-    systemctl start hassio-apparmor.service
-fi
-
-##
-# Init system
-echo "[Info] Run Hass.io"
-systemctl start hassio-supervisor.service	
-	
-	
-}	
 check_abort()
 {
 	echo -e "\nDisabling user account creation procedure\n"
@@ -165,10 +139,15 @@ add_user()
 		chown $RealUserName:$RealUserName /home/${RealUserName}/.activate_psd
 	fi
 }
-
-if [ ! -f /etc/hassio.json ]; then
- echo "Installing Home Assistent..."
- install_hassio
+if [ ! -f /var/local/installed ]; then
+	# checking for internet connection
+	wget -q --spider http://google.com
+	if [ $? -eq 0 ]; then
+	    install_servers
+	else
+	    echo "Please check your internet connection and run again."
+	    exit
+	fi
 fi
 
 if [ -f /root/.not_logged_in_yet ] && [ -n "$BASH_VERSION" ] && [ "$-" != "${-#*i}" ]; then
