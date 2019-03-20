@@ -1,5 +1,17 @@
-# Armbian for OLIMEX A20 boards with hass.io included #
+# Armbian for OLIMEX A20 boards with sets of servers ready to install #
 
+# Home Assistant # 
+# NextCloud # 
+# Webmin with Apache, MySQL & PHP servers #
+
+Tested with Ubuntu 18.04.2 
+..... todo:
+
+
+
+
+
+# -------- #
 **This info had been modified for the Olimex branch of the build**
 
 Debian based Linux for ARM based single-board computers
