@@ -18,7 +18,9 @@ install_stretch_servers()
 		        "Yuno Host")
 		            if [ ! -f /var/local/yunohost ]; then
 		            echo "Installing $opt..."
-		            curl https://install.yunohost.org | bash
+		            wget https://install.yunohost.org/ -O /tmp/yunohost-install.sh
+		            chmod +x /tmp/yunohost-install.sh
+		            /tmp/yunohost-install.sh -a
 		            touch "/var/local/yunohost"
 		            else
 					echo "$opt already installed."
