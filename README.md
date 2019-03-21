@@ -3,6 +3,7 @@
 # Home Assistant # 
 # NextCloud # 
 # Webmin with Apache, MySQL & PHP servers #
+# YunoHost #
 
 Tested with Ubuntu 18.04.2 
 ..... todo:
