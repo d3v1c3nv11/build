@@ -165,7 +165,7 @@ if [ ! -f /var/local/installed ]; then
 	# checking for internet connection
 	wget -q --spider http://google.com
 	if [ $? -eq 0 ]; then
-		if [ "$(cat /etc/debian_version)" == "9."* ]; then
+		if [[ "$(cat /etc/debian_version)" == *"9."* ]]; then
 		install_stretch_servers
 		touch "/var/local/installed"
 		else
