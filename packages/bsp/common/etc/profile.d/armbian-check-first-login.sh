@@ -7,13 +7,40 @@
 # warranty of any kind, whether express or implied.
 
 . /etc/armbian-release
+install_stretch_servers()
+{
+	echo ""
+		PS3='Please enter your choice to install: '
+		options=("Yuno Host" "Quit")
+		select opt in "${options[@]}"
+		do
+		    case $opt in
+		        "Yuno Host")
+		            if [ ! -f /var/local/yunohost ]; then
+		            echo "Installing $opt..."
+		            curl https://install.yunohost.org | bash
+		            touch "/var/local/yunohost"
+		            else
+					echo "$opt already installed."
+					exit 1
+		            fi
+		            break
+		            ;;
+		        "Quit")
+		            break
+		            ;;
+		        *) echo "invalid option $REPLY";;
+		    esac
+		done
 
-install_servers()
+	
+}
+install_bionic_servers()
 {
 
 	echo ""
 		PS3='Please enter your choice to install: '
-		options=("Home Assistant" "NextCloud" "Webmin with Apache, MySQL & PHP servers" "Do not show this menu again" "Quit")
+		options=("Home Assistant" "NextCloud" "Webmin with Apache, MySQL & PHP servers" "Quit")
 		select opt in "${options[@]}"
 		do
 		    case $opt in
@@ -68,11 +95,6 @@ install_servers()
 					fi
 		            break
 		            ;;
-		        "Do not show this menu again")
-		             touch "/var/local/installed"
-		             exit 1
-		             break
-		             ;;   
 		        "Quit")
 		            break
 		            ;;
@@ -143,7 +165,13 @@ if [ ! -f /var/local/installed ]; then
 	# checking for internet connection
 	wget -q --spider http://google.com
 	if [ $? -eq 0 ]; then
-	    install_servers
+		if [ "$(cat /etc/debian_version)" == "9."* ]; then
+		install_stretch_servers
+		touch "/var/local/installed"
+		else
+	    install_bionic_servers
+	    touch "/var/local/installed"
+		fi
 	else
 	    echo "Please check your internet connection and run again."
 	    exit
