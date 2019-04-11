@@ -75,6 +75,8 @@ install_bionic_servers()
 		            fi
 					if [ ! -f /var/local/webserver ]; then
 		            echo "Installing $opt..."
+			    apt update -y
+			    apt upgrade -y
 		            apt install -y apache2 
 		            apt install -y mysql-server
 		            apt install -y php libapache2-mod-php
