@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (c) Authors: http://www.armbian.com/authors
 #
@@ -11,23 +11,58 @@ install_stretch_servers()
 {
 	echo ""
 		PS3='Please enter your choice to install: '
-		options=("Yuno Host" "Quit")
+		options=("Yuno Host" "Open Media Vault" "Quit")
 		select opt in "${options[@]}"
 		do
 		    case $opt in
 		        "Yuno Host")
 		            if [ ! -f /var/local/yunohost ]; then
 		            echo "Installing $opt..."
+		            apt -y update
+		            apt -y upgrade
+		            apt install libnftnl4 nftables
 		            wget https://install.yunohost.org/ -O /tmp/yunohost-install.sh
 		            chmod +x /tmp/yunohost-install.sh
 		            /tmp/yunohost-install.sh -a
+		            yunohost tools postinstall
 		            touch "/var/local/yunohost"
+		            rm -f /root/.not_logged_in_yet
 		            else
 					echo "$opt already installed."
 					exit 1
 		            fi
 		            break
 		            ;;
+                "Open Media Vault")
+                    apt-get update
+                    apt-get install --yes apt-transport-https
+                    cat <<-EOF >> /etc/apt/sources.list.d/openmediavault.list
+                        deb https://packages.openmediavault.org/public arrakis main
+                        # deb https://downloads.sourceforge.net/project/openmediavault/packages arrakis main
+                        ## Uncomment the following line to add software from the proposed repository.
+                        # deb https://packages.openmediavault.org/public arrakis-proposed main
+                        # deb https://downloads.sourceforge.net/project/openmediavault/packages arrakis-proposed main
+                        ## This software is not part of OpenMediaVault, but is offered by third-party
+                        ## developers as a service to OpenMediaVault users.
+                        # deb https://packages.openmediavault.org/public arrakis partner
+                        # deb https://downloads.sourceforge.net/project/openmediavault/packages arrakis partner
+						EOF
+                    export LANG=C
+                    export DEBIAN_FRONTEND=noninteractive
+                    export APT_LISTCHANGES_FRONTEND=none
+                    apt-get update
+                    apt-get --allow-unauthenticated install openmediavault-keyring
+                    apt-get update
+                    apt-get --yes --auto-remove --show-upgraded \
+                            --allow-downgrades --allow-change-held-packages \
+                            --no-install-recommends \
+                            --option Dpkg::Options::="--force-confdef" \
+                            --option DPkg::Options::="--force-confold" \
+                            install postfix openmediavault
+                    # Initialize the system and database.
+                    omv-initsystem
+                    break
+                    ;;
 		        "Quit")
 		            break
 		            ;;
